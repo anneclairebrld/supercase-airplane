@@ -138,5 +138,5 @@ if __name__ == '__main__':
 
 	df = pd.DataFrame(data, columns = columns)
 
-	df.to_csv('data.csv', index=False)
+	df.to_csv('./data/data.csv', index=False)
 	print('File written')
