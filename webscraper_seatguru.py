@@ -20,9 +20,9 @@ def get_data(r, airline_company, airplane):
 			raw_text_info = info.find('span', class_ = 'date').text
 			date_posted = re.search(r'(\d+/\d+/\d+)', raw_text_info).group(1)
 			## do something about the seat in info?
-			comment_text = comment.text
+			comment_text = comment.text.strip()
 			rows.append([date_posted, comment_text, airline_company, airplane]) # append the data 
-	print(rows)
+	#print(rows)
 	return rows 
 
 def get_airplane_names(r):
@@ -39,6 +39,18 @@ def get_airplane_names(r):
 	print(airplanes)
 	return airplanes 
 
+def get_airline_names(r):
+	airlines = list() 
+	soup = BeautifulSoup(r.text, 'html.parser')
+	uls = soup.find('div', class_ = 'browseAirlines').find_all('ul')
+
+	for ul in uls:
+		links  = ul.find_all('a')
+		for link in links:
+			airlines.append(link.get('href'))
+
+	return airlines
+
 def request_website(website):
 	try:
 		r = requests.get(website)
@@ -52,20 +64,36 @@ def request_website(website):
 
 
 if __name__ == '__main__':
-	url_base = 'https://www.seatguru.com/airlines/Air_Canada/information.php'
-	r = request_website(url_base)
+	data = list() 
+	r = request_website('https://www.seatguru.com/browseairlines/browseairlines.php')
+	airlines  = get_airline_names(r)
+	r.close()
+	
 
-	if r != 'error':
-		airplanes = get_airplane_names(r)
-		r.close()
+	for count, airline in enumerate(airlines):
+		print('Webscraping airline %d/%d' % (count, (len(airlines) - 1) ))
+		url_base = 'https://www.seatguru.com/' + airline
+		r = request_website(url_base)
 
-		for airplane in airplanes:
-			website = 'https://www.seatguru.com/' + airplane
-			r2 = request_website(website)
-			airline_comp = airplane.split('/')[2]
-			airplane_name = airplane.split('/')[3].split('.ph')[0]
-			airline_data = get_data(r2, airline_comp, airplane_name)
+		# do this for a certain amount of companies 
 
-			r2.close()
+		if r != 'error':
+			airplanes = get_airplane_names(r)
+			r.close()
 
-	print(airline_data)
+			for i, airplane in enumerate(airplanes):
+				print('Airplane %d/%d' % (i, (len(airplanes) - 1) ))
+				website = 'https://www.seatguru.com/' + airplane
+				r2 = request_website(website)
+
+				if r2 != 'error':
+					airline_comp = airplane.split('/')[2]
+					airplane_name = airplane.split('/')[3].split('.ph')[0]
+					airline_data = get_data(r2, airline_comp, airplane_name)
+					r2.close()
+
+					data = data + airline_data
+	
+	df = pd.DataFrame(data, columns = ['date', 'comment', 'flight_company', 'airplane_model'])
+	df.to_csv('./data/seatguru_data.csv', index=False)
+	print('file written')
