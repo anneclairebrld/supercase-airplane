@@ -4,3 +4,7 @@ data/.~lock.data.csv#
 data/.~lock.seatguru_data.csv#
 
 .ipynb_checkpoints/LDA-checkpoint.ipynb
+
+.ipynb_checkpoints/
+
+tripAdvisor/__pycache__/
