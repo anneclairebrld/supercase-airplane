@@ -1,0 +1,1 @@
+FEED_URL = 'https://www.tripadvisor.fr/Airlines'
