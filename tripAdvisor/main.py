@@ -19,7 +19,7 @@ class Scraper:
 
     @staticmethod
     def start_driver():
-        return webdriver.Chrome(executable_path='/Users/macbookair/Desktop/supercase/chromedriver', chrome_options=chrome_options)
+        return webdriver.Chrome(chrome_options=chrome_options)
 
     def open_page(self, driver):
         driver.get(self.url)
